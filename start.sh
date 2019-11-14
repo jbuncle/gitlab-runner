@@ -54,10 +54,6 @@ check_interval = 0
 EOF
 ) > /etc/gitlab-runner/config.toml
 
-echo "Created file"
-cat /etc/gitlab-runner/config.toml
-
-
 # TODO: check if already registered
 gitlab-runner register --non-interactive \
      --url "$GITLAB_PROTOCOL://$GITLAB_VHOST/ci/" \
