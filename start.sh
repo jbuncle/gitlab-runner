@@ -30,38 +30,15 @@ done
 
 echo "Gitlab server status is $(curl --write-out %{http_code} --silent --output /dev/null $GITLAB_PROTOCOL://$GITLAB_VHOST)"
 
-
-# Build config.toml
-(
-cat <<EOF
-concurrent = ${GITLAB_CONCURRENT_RUNNERS}
-check_interval = 0
-[[runners]]
-  name = "gitlab-runner"
-  url = "${GITLAB_PROTOCOL}://${GITLAB_VHOST}/ci/"
-  token = "${GITLAB_REGISTRATION_TOKEN}"
-  executor = "docker"
-  privileged = true
-  cache_dir = "cache"
-  [runners.docker]
-    privileged = true
-    tls_verify = false
-    image = "docker"
-    disable_cache = false
-    volumes = ["/var/run/docker.sock:/var/run/docker.sock", "/cache"]
-  [runners.cache]
-    Insecure = true
-EOF
-) > /etc/gitlab-runner/config.toml
-
-# TODO: check if already registered
-gitlab-runner register --non-interactive \
+if [ -f '/etc/gitlab-runner/config.toml' ] ; then
+    gitlab-runner register --non-interactive \
      --url "$GITLAB_PROTOCOL://$GITLAB_VHOST/ci/" \
      --registration-token "$GITLAB_REGISTRATION_TOKEN" \
      --executor docker \
      --docker-image gitlab_runner \
      --docker-volumes /var/run/docker.sock:/var/run/docker.sock \
      --docker-privileged
+fi
 
 # Forward command on to original entrypoint
 /usr/bin/dumb-init /entrypoint run "$@"
