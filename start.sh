@@ -17,11 +17,16 @@ fi
 [ ! -z "$GITLAB_LOCAL_HOST" ] || (echo "Missing GITLAB_LOCAL_HOST" && exit)
 [ ! -z "$GITLAB_REGISTRATION_TOKEN" ] || (echo "Missing GITLAB_REGISTRATION_TOKEN" && exit)
 
+
+# Check if hostname is reachable
+echo "Checking $GITLAB_VHOST is reachable (ping $GITLAB_VHOST)"
+ping -q -c 1 $GITLAB_VHOST > /dev/null  || (echo "Can't reach host $GITLAB_VHOST" && exit)
+        
 echo "Connecting to $GITLAB_PROTOCOL://$GITLAB_VHOST"
 
-
 # Wait until Gitlab is running
-GITLAB_STATUSCODE="$(curl --write-out %{http_code} --silent --output /dev/null $GITLAB_PROTOCOL://$GITLAB_VHOST)"
+echo "Fetching status code for $GITLAB_PROTOCOL://$GITLAB_VHOST"
+GITLAB_STATUSCODE="$(curl -L --write-out %{http_code} --silent --output /dev/null $GITLAB_PROTOCOL://$GITLAB_VHOST)"
 while [ "$GITLAB_STATUSCODE" != "302" ]; do
     echo "Gitlab server not up yet, code is $GITLAB_STATUSCODE, sleeping..."
     sleep 5
@@ -38,6 +43,8 @@ if [ -f '/etc/gitlab-runner/config.toml' ] ; then
      --docker-image gitlab_runner \
      --docker-volumes /var/run/docker.sock:/var/run/docker.sock \
      --docker-privileged
+else 
+    echo "Runner previously registered"
 fi
 
 # Forward command on to original entrypoint
