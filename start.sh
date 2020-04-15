@@ -35,7 +35,12 @@ done
 
 echo "Gitlab server status is $(curl --write-out %{http_code} --silent --output /dev/null $GITLAB_PROTOCOL://$GITLAB_VHOST)"
 
-if [ ! -f '/etc/gitlab-runner/config.toml' ] ; then
+
+RUNNER_COUNT=$(gitlab-runner list 2>&1 | grep Executor | wc -l)
+
+echo "Number of runners registered: $RUNNER_COUNT"
+
+if [[ "$RUNNER_COUNT" == "0" ]] ; then
     gitlab-runner register --non-interactive \
      --url "$GITLAB_PROTOCOL://$GITLAB_VHOST/ci/" \
      --registration-token "$GITLAB_REGISTRATION_TOKEN" \
