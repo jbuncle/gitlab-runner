@@ -42,7 +42,7 @@ if [[ "$RUNNER_COUNT" == "0" ]] ; then
      --executor docker \
      --docker-image gitlab_runner \
      --docker-volumes /var/run/docker.sock:/var/run/docker.sock \
-     --docker-volumes "/certs/client" \
+     --docker-volumes "/var/runners/certs/client:/certs/client" \
      --docker-privileged
 else 
     echo "Runner previously registered"
