@@ -8,8 +8,12 @@ set -u
 [ ! -z "$GITLAB_REGISTRATION_TOKEN" ] || (echo "Missing GITLAB_REGISTRATION_TOKEN" && exit)
 
 
+getremotestatus() {
+    curl -sL -w "%{http_code}\\n" "$GITLAB_VHOST" -o /dev/null
+}
+
 counter=1 limit=3
-until ping -q -c 1 $GITLAB_VHOST > /dev/null ; do
+until [ $(getremotestatus) = 200 ] ; do
     echo "$GITLAB_VHOST not accessible" 
     [ "$counter" -lt "$limit" ] || (echo "Reached limit when trying to access ${GITLAB_VHOST}"; exit 1)
     sleep 3
