@@ -45,6 +45,7 @@ if [[ "$RUNNER_COUNT" == "0" ]] ; then
      --registration-token "$GITLAB_REGISTRATION_TOKEN" \
      --executor docker \
      --docker-image gitlab_runner \
+     --cache-dir /var/cache/gitlab-runner
      --docker-volumes /var/run/docker.sock:/var/run/docker.sock \
      --docker-volumes "/var/runners/certs/client:/certs/client" \
      --docker-privileged
