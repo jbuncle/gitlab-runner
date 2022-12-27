@@ -4,6 +4,7 @@ set -u
 
 # Default to http protocol for GitLab host server
 : "${GITLAB_PROTOCOL:-http}"
+: "${DESCRIPTION:=Runner}"
 : "${GITLAB_CONCURRENT_RUNNERS:-2}"
 [ ! -z "$GITLAB_REGISTRATION_TOKEN" ] || (echo "Missing GITLAB_REGISTRATION_TOKEN" && exit)
 
@@ -38,17 +39,19 @@ echo "Gitlab server status is $(curl --write-out %{http_code} --silent --output 
 RUNNER_COUNT=$(gitlab-runner list 2>&1 | grep Executor | wc -l)
 
 echo "Number of runners registered: $RUNNER_COUNT"
-if [[ "$RUNNER_COUNT" == "0" ]] ; then
+if [[ "${RUNNER_COUNT}" == "0" ]] ; then
     # Generates /etc/gitlab-runner/config.toml
     gitlab-runner register --non-interactive \
-     --url "$GITLAB_PROTOCOL://$GITLAB_VHOST/ci/" \
-     --registration-token "$GITLAB_REGISTRATION_TOKEN" \
+     --url "${GITLAB_PROTOCOL}://${GITLAB_VHOST}/ci/" \
+     --registration-token "${GITLAB_REGISTRATION_TOKEN}" \
      --executor docker \
-     --docker-image gitlab_runner \
-     --cache-dir /var/cache/gitlab-runner
-     --docker-volumes /var/run/docker.sock:/var/run/docker.sock \
-     --docker-volumes "/var/runners/certs/client:/certs/client" \
-     --docker-privileged
+     --cache-dir /var/cache/gitlab-runner \
+     --description "${DESCRIPTION}" \
+     --docker-image "docker:20.10.16" \
+     --docker-privileged \
+     --docker-volumes "/certs/client"
+    #  --docker-volumes /var/run/docker.sock:/var/run/docker.sock \
+
 else 
     echo "Runner previously registered"
 fi
