@@ -1,8 +1,12 @@
-FROM gitlab/gitlab-runner:v14.0.1
+FROM gitlab/gitlab-runner:ubuntu-v15.11.0
 
-ADD start.sh start.sh
-RUN chmod +x start.sh
+RUN rm -f /etc/gitlab-runner/config.toml
 
-VOLUME /etc/gitlab-runner/
+# Copy the start script into the image.
+COPY start.sh /start.sh
 
-ENTRYPOINT ["./start.sh"]
+# Ensure the start script is executable.
+RUN chmod +x /start.sh
+
+# Use our start script as the entrypoint with bash.
+ENTRYPOINT ["/bin/bash", "/start.sh"]

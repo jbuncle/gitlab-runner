@@ -1,44 +1,55 @@
-#! /bin/bash
+#!/bin/bash
 
-set -e
+set -euo pipefail
 
-NAMESPACE=$(basename $(dirname $(pwd)))
-NAME=$(basename `pwd`)
+# Determine namespace and name from script location
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+NAMESPACE=$(basename "$(dirname "$SCRIPT_DIR")")
+NAME=$(basename "$SCRIPT_DIR")
 DOCKER_TAG=development
 
-IMAGE_NAME=${NAMESPACE}/${NAME}:${DOCKER_TAG}
+IMAGE_NAME="${NAMESPACE}/${NAME}:${DOCKER_TAG}"
 
-# Local machine build
+# Build the Docker image
 build() {
-    docker build -t $IMAGE_NAME .
+    echo "Building Docker image: ${IMAGE_NAME}"
+    docker build -t "$IMAGE_NAME" "$SCRIPT_DIR"
 }
 
+# Placeholder for running the container
 run() {
-   echo "Not supported"
+    echo "Run operation is not supported yet."
 }
 
+# Push the Docker image with the 'development' tag
 push() {
-    # Only pushes development tag
-    echo "Pushing tag ${IMAGE_NAME}":development 
-    docker push ${IMAGE_NAME}:development 
+    echo "Pushing Docker image: ${IMAGE_NAME}"
+    docker push "$IMAGE_NAME"
 }
 
-case $1 in
-    "build")
+# Display usage information
+usage() {
+    echo "Usage: $0 {build|run|build-run|build-push}"
+    exit 1
+}
+
+# Main command dispatcher
+case "${1:-}" in
+    build)
         build
-    ;;
-    "run")
+        ;;
+    run)
         run
-    ;;
-    "build-run")
+        ;;
+    build-run)
         build
         run
-    ;;
-    "build-push")
+        ;;
+    build-push)
         build
         push
-    ;;
+        ;;
     *)
-        echo "Specify 'build', or 'build-install'"
-    ;;
+        usage
+        ;;
 esac
